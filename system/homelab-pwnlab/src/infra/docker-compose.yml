@@ -1,0 +1,7 @@
+services:
+  webapp:
+    image: webapp
+    ports:
+      - "8080:5555"
+    volumes:
+      - /home/user/nas_storage:/app/public/uploads

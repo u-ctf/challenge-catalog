@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Homelab Dropzone</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4efe6;
+      --bg-accent: #efe1cb;
+      --surface: rgba(255, 250, 242, 0.9);
+      --surface-strong: #fffdf8;
+      --line: rgba(79, 49, 24, 0.12);
+      --text: #2b1d0f;
+      --muted: #75614d;
+      --accent: #b85c38;
+      --accent-deep: #8f4325;
+      --accent-soft: rgba(184, 92, 56, 0.14);
+      --success: #2f6b4f;
+      --shadow: 0 24px 60px rgba(87, 54, 21, 0.16);
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", "Trebuchet MS", Verdana, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.75), transparent 30%),
+        radial-gradient(circle at 85% 15%, rgba(184, 92, 56, 0.18), transparent 22%),
+        linear-gradient(135deg, var(--bg) 0%, #f8f2e8 42%, var(--bg-accent) 100%);
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: auto;
+      width: 22rem;
+      height: 22rem;
+      border-radius: 999px;
+      pointer-events: none;
+      filter: blur(10px);
+      opacity: 0.45;
+      z-index: 0;
+    }
+
+    body::before {
+      top: -8rem;
+      right: -5rem;
+      background: rgba(255, 207, 157, 0.65);
+    }
+
+    body::after {
+      bottom: -10rem;
+      left: -6rem;
+      background: rgba(168, 204, 186, 0.45);
+    }
+
+    .shell {
+      position: relative;
+      z-index: 1;
+      width: min(1120px, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 24px;
+      align-items: stretch;
+      margin-bottom: 24px;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .hero-copy {
+      padding: 38px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-copy::after {
+      content: "";
+      position: absolute;
+      right: -30px;
+      bottom: -30px;
+      width: 180px;
+      height: 180px;
+      border-radius: 36px;
+      background: linear-gradient(135deg, rgba(184, 92, 56, 0.18), rgba(255, 255, 255, 0));
+      transform: rotate(18deg);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--accent-deep);
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid rgba(184, 92, 56, 0.15);
+    }
+
+    h1,
+    h2,
+    h3 {
+      font-family: Georgia, "Times New Roman", serif;
+      margin: 0;
+    }
+
+    h1 {
+      margin-top: 20px;
+      font-size: clamp(2.4rem, 5vw, 4.8rem);
+      line-height: 0.94;
+      letter-spacing: -0.04em;
+      max-width: 10ch;
+    }
+
+    .hero-copy p {
+      max-width: 52ch;
+      margin: 20px 0 0;
+      color: var(--muted);
+      font-size: 1.02rem;
+      line-height: 1.7;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 28px;
+      max-width: 440px;
+    }
+
+    .stat {
+      padding: 16px 18px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.68);
+      border: 1px solid rgba(79, 49, 24, 0.08);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 1.6rem;
+      margin-bottom: 4px;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .hero-side {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 18px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 248, 238, 0.94)),
+        linear-gradient(135deg, rgba(184, 92, 56, 0.1), rgba(47, 107, 79, 0.06));
+    }
+
+    .mini-card {
+      padding: 18px;
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, 0.76);
+      border: 1px solid rgba(79, 49, 24, 0.08);
+    }
+
+    .mini-card strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 1rem;
+    }
+
+    .mini-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .upload-panel,
+    .files-panel {
+      padding: 28px;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .section-heading p {
+      margin: 6px 0 0;
+      color: var(--muted);
+    }
+
+    .badge {
+      white-space: nowrap;
+      padding: 9px 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent-deep);
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    form {
+      display: grid;
+      gap: 16px;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    input,
+    textarea,
+    button {
+      font: inherit;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      border: 1px solid rgba(79, 49, 24, 0.12);
+      border-radius: 18px;
+      background: var(--surface-strong);
+      padding: 16px 18px;
+      color: var(--text);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+      resize: vertical;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: rgba(184, 92, 56, 0.5);
+      box-shadow: 0 0 0 4px rgba(184, 92, 56, 0.12);
+      transform: translateY(-1px);
+    }
+
+    textarea {
+      min-height: 220px;
+      line-height: 1.6;
+    }
+
+    .form-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+
+    .primary-action {
+      justify-self: start;
+      border: 0;
+      border-radius: 999px;
+      padding: 14px 22px;
+      font-weight: 700;
+      color: #fffaf2;
+      background: linear-gradient(135deg, var(--accent) 0%, #d67b52 100%);
+      box-shadow: 0 16px 30px rgba(184, 92, 56, 0.25);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    }
+
+    .primary-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 34px rgba(184, 92, 56, 0.28);
+      filter: saturate(1.05);
+    }
+
+    .files-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 14px;
+    }
+
+    .file-card {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+      padding: 16px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.74);
+      border: 1px solid rgba(79, 49, 24, 0.08);
+      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .file-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(184, 92, 56, 0.22);
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    .file-glyph {
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(184, 92, 56, 0.18), rgba(184, 92, 56, 0.05));
+      color: var(--accent-deep);
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }
+
+    .file-meta {
+      min-width: 0;
+    }
+
+    .file-meta strong,
+    .file-meta a {
+      display: inline-block;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .file-meta strong {
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+
+    .file-meta span {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .file-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .file-actions a {
+      text-decoration: none;
+      color: var(--accent-deep);
+      font-weight: 700;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(184, 92, 56, 0.1);
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .file-actions a:hover {
+      background: rgba(184, 92, 56, 0.18);
+      color: var(--text);
+    }
+
+    .empty-state {
+      padding: 26px;
+      border-radius: 24px;
+      border: 1px dashed rgba(79, 49, 24, 0.2);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.58), rgba(255, 248, 238, 0.92));
+    }
+
+    .empty-state p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    @media (max-width: 920px) {
+      .hero,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-copy,
+      .hero-side,
+      .upload-panel,
+      .files-panel {
+        padding: 24px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .shell {
+        width: min(100% - 1rem, 1120px);
+        padding-top: 16px;
+      }
+
+      h1 {
+        max-width: none;
+      }
+
+      .hero-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .section-heading,
+      .file-card {
+        grid-template-columns: 1fr;
+      }
+
+      .file-actions {
+        justify-content: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <%
+    const fileCount = files.length;
+    const uniqueTypes = new Set(
+      files.map((file) => {
+        const parts = file.split(".");
+        return parts.length > 1 ? parts.pop().toLowerCase() : "file";
+      })
+    ).size;
+    const getGlyph = (file) => {
+      const parts = file.split(".");
+      const ext = parts.length > 1 ? parts.pop().toUpperCase() : "FILE";
+      return ext.slice(0, 3);
+    };
+  %>
+  <main class="shell">
+    <section class="hero">
+      <article class="panel hero-copy">
+        <span class="eyebrow">Personal file exchange</span>
+        <h1>Homelab dropzone with a cleaner face.</h1>
+        <p>
+          Upload quick notes, scripts, or scratch files into a workspace that feels deliberate instead of temporary. The flow stays simple, but the page now has structure, contrast, and room to breathe.
+        </p>
+        <div class="hero-stats">
+          <div class="stat">
+            <strong><%= fileCount %></strong>
+            <span>files currently available</span>
+          </div>
+          <div class="stat">
+            <strong><%= uniqueTypes %></strong>
+            <span>distinct file types in the stash</span>
+          </div>
+        </div>
+      </article>
+
+      <aside class="panel hero-side">
+        <div class="mini-card">
+          <strong>Fast path</strong>
+          <p>Name the file, paste the contents, and it lands in the shared uploads directory immediately.</p>
+        </div>
+        <div class="mini-card">
+          <strong>Clean retrieval</strong>
+          <p>Every saved file gets a direct open link and a download action so the list works like a lightweight archive.</p>
+        </div>
+        <div class="mini-card">
+          <strong>Current mood</strong>
+          <p>Warm paper tones, softer panels, and clearer hierarchy make the interface feel less like a placeholder.</p>
+        </div>
+      </aside>
+    </section>
+
+    <section class="grid">
+      <article class="panel upload-panel">
+        <div class="section-heading">
+          <div>
+            <h2>Upload a new file</h2>
+            <p>Use plain text content and a file name that will be easy to recognize later.</p>
+          </div>
+          <span class="badge">Write once, fetch anywhere</span>
+        </div>
+
+        <form action="/upload" method="post">
+          <label>
+            File name
+            <input type="text" name="fileName" placeholder="notes.txt" required />
+          </label>
+
+          <label>
+            File content
+            <textarea name="fileContent" placeholder="Paste file contents here..." required></textarea>
+          </label>
+
+          <p class="form-note">The content is stored exactly as submitted, so this works well for snippets, configs, and quick text payloads.</p>
+
+          <button class="primary-action" type="submit">Upload file</button>
+        </form>
+      </article>
+
+      <article class="panel files-panel">
+        <div class="section-heading">
+          <div>
+            <h2>Uploaded files</h2>
+            <p>Browse what is already in the dropzone and open or download it directly.</p>
+          </div>
+          <span class="badge"><%= fileCount %> total</span>
+        </div>
+
+        <% if (fileCount === 0) { %>
+          <div class="empty-state">
+            <h3>Nothing here yet</h3>
+            <p>The first upload will appear here as a card with direct open and download actions.</p>
+          </div>
+        <% } else { %>
+          <ul class="files-list">
+            <% files.forEach((file) => { %>
+              <li class="file-card">
+                <div class="file-glyph"><%= getGlyph(file) %></div>
+                <div class="file-meta">
+                  <strong><%= file %></strong>
+                  <span>Ready to open in the browser or save locally.</span>
+                </div>
+                <div class="file-actions">
+                  <a href="/uploads/<%= encodeURIComponent(file) %>" target="_blank" rel="noreferrer">Open</a>
+                  <a href="/download/<%= encodeURIComponent(file) %>">Download</a>
+                </div>
+              </li>
+            <% }); %>
+          </ul>
+        <% } %>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
