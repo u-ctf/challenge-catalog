@@ -1,0 +1,12 @@
+[Unit]
+Description=Init Challenge
+After=docker.service
+BindsTo=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/root/init-challenge.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

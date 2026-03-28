@@ -1,0 +1,74 @@
+apiVersion: "ctfd.uctf.io/v1"
+kind: "InstancedChallenge"
+metadata:
+  name: "sample-challenge"
+spec:
+  challenge:
+    name: "Sample challenge"
+    description: "A challenge created from the wizard test page."
+    category: "web"
+    author: "U-CTF"
+    flag:
+      type: "per_instance"
+      perInstancePrefix: "uctf"
+      mountType: "file"
+      mountFile:
+        filePath: "/tmp/flag/flag.txt"
+        fileMode: "0600"
+        fileOwner: 1555
+        fileGroup: 1555
+    state:
+      type: "static"
+      staticState: "active"
+    value:
+      type: "static"
+      staticValue: 100
+    tags:
+      - "sample"
+      - "wizard"
+  infra:
+    replicas: 1
+    pods:
+      - name: "challenge-pod-1"
+        egress: false
+        flagContainers:
+          - "challenge-container-1"
+        spec:
+          containers:
+            - name: "challenge-container-1"
+              image: "ghcr.io/yyewolf/homelab-pwnlab:latest"
+              readinessProbe:
+                initialDelaySeconds: 10
+                periodSeconds: 10
+                timeoutSeconds: 2
+                successThreshold: 1
+                failureThreshold: 5
+                httpGet:
+                  path: "/"
+                  port: 8080
+              livenessProbe:
+                initialDelaySeconds: 10
+                periodSeconds: 10
+                timeoutSeconds: 2
+                failureThreshold: 5
+                httpGet:
+                  path: "/"
+                  port: 8080
+              ports:
+                - name: "http"
+                  containerPort: 8080
+                - name: "ssh"
+                  containerPort: 8079
+    exposedPorts:
+      - type: "Public"
+        name: "HTTP"
+        slug: "http"
+        podName: "challenge-pod-1"
+        portName: "http"
+        protocol: "HTTP"
+      - type: "Public"
+        name: "SSH"
+        slug: "ssh"
+        podName: "challenge-pod-1"
+        portName: "ssh"
+        protocol: "HTTP"

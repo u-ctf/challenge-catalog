@@ -1,0 +1,43 @@
+when:
+- event: tag
+- event: push
+  branch: main
+
+steps:
+- name: build-webapp
+  image: woodpeckerci/plugin-docker-buildx
+  settings:
+    platforms:
+    - linux/amd64
+    repo: registry.yewolf.fr/u-ctf/challenges/homelab-pwnlab-webapp
+    registry: registry.yewolf.fr
+    dockerfile: system/homelab-pwnlab/src/app/Dockerfile
+    context: system/homelab-pwnlab/src/app
+    build_args:
+      sys_arch: amd64
+    output: type=oci,dest=system/homelab-pwnlab/built/app.tar
+    auto_tag: true
+    username:
+      from_secret: REGISTRY_USERNAME
+    password:
+      from_secret: REGISTRY_PASSWORD
+
+- name: publish-image
+  image: woodpeckerci/plugin-docker-buildx
+  settings:
+    platforms:
+    - linux/amd64
+    repo: registry.yewolf.fr/u-ctf/challenges/homelab-pwnlab
+    registry: registry.yewolf.fr
+    dockerfile: system/homelab-pwnlab/Dockerfile
+    context: system/homelab-pwnlab
+    build_args:
+      sys_arch: amd64
+    cache_from:
+    - type=registry\\,ref=registry.yewolf.fr/u-ctf/challenges/homelab-pwnlab:cache
+    cache_to: type=registry,ref=registry.yewolf.fr/u-ctf/challenges/homelab-pwnlab:cache
+    auto_tag: true
+    username:
+      from_secret: REGISTRY_USERNAME
+    password:
+      from_secret: REGISTRY_PASSWORD

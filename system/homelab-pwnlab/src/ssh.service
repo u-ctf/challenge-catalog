@@ -1,0 +1,16 @@
+[Unit]
+Description=Ssh Service
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/gotty -w -p 8079 /bin/bash
+WorkingDirectory=/home/user
+Restart=always
+RestartSec=10
+User=user
+Environment=TERM=xterm
+KillMode=process
+TimeoutStopSec=1s
+
+[Install]
+WantedBy=multi-user.target
