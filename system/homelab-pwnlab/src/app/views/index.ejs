@@ -459,10 +459,10 @@
   <main class="shell">
     <section class="hero">
       <article class="panel hero-copy">
-        <span class="eyebrow">Personal file exchange</span>
-        <h1>Homelab dropzone with a cleaner face.</h1>
+        <span class="eyebrow">Shared file storage</span>
+        <h1>Store and retrieve files from one place.</h1>
         <p>
-          Upload quick notes, scripts, or scratch files into a workspace that feels deliberate instead of temporary. The flow stays simple, but the page now has structure, contrast, and room to breathe.
+          Upload notes, scripts, configs, or other text files and keep them available for download from the shared uploads directory.
         </p>
         <div class="hero-stats">
           <div class="stat">
@@ -478,16 +478,16 @@
 
       <aside class="panel hero-side">
         <div class="mini-card">
-          <strong>Fast path</strong>
-          <p>Name the file, paste the contents, and it lands in the shared uploads directory immediately.</p>
+          <strong>Simple upload</strong>
+          <p>Provide a file name, paste the contents, and save it directly into the uploads folder.</p>
         </div>
         <div class="mini-card">
-          <strong>Clean retrieval</strong>
-          <p>Every saved file gets a direct open link and a download action so the list works like a lightweight archive.</p>
+          <strong>Quick access</strong>
+          <p>Each saved file appears in the list below so it can be downloaded again without leaving the page.</p>
         </div>
         <div class="mini-card">
-          <strong>Current mood</strong>
-          <p>Warm paper tones, softer panels, and clearer hierarchy make the interface feel less like a placeholder.</p>
+          <strong>Current inventory</strong>
+          <p><%= fileCount %> files are currently available across <%= uniqueTypes %> file types.</p>
         </div>
       </aside>
     </section>
@@ -523,7 +523,7 @@
         <div class="section-heading">
           <div>
             <h2>Uploaded files</h2>
-            <p>Browse what is already in the dropzone and open or download it directly.</p>
+            <p>Browse the current uploads and download any file directly.</p>
           </div>
           <span class="badge"><%= fileCount %> total</span>
         </div>
@@ -531,7 +531,7 @@
         <% if (fileCount === 0) { %>
           <div class="empty-state">
             <h3>Nothing here yet</h3>
-            <p>The first upload will appear here as a card with direct open and download actions.</p>
+            <p>The first upload will appear here as a card with a direct download action.</p>
           </div>
         <% } else { %>
           <ul class="files-list">
@@ -540,10 +540,9 @@
                 <div class="file-glyph"><%= getGlyph(file) %></div>
                 <div class="file-meta">
                   <strong><%= file %></strong>
-                  <span>Ready to open in the browser or save locally.</span>
+                  <span>Available in the shared uploads directory.</span>
                 </div>
                 <div class="file-actions">
-                  <a href="/uploads/<%= encodeURIComponent(file) %>" target="_blank" rel="noreferrer">Open</a>
                   <a href="/download/<%= encodeURIComponent(file) %>">Download</a>
                 </div>
               </li>
