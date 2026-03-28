@@ -6,7 +6,14 @@ if [ $img_amount -gt 1 ]; then
     exit 0
 fi
 
-docker load < /app.tar
+loaded=$(docker load < /app.tar)
+
+# Extract image ID (sha256:...)
+image_id=$(echo "$loaded" | awk '{print $4}')
+echo $image_id
+
+# Tag it
+docker tag "$image_id" webapp:latest
 
 mkdir -p /home/user/nas_storage
 chmod a+w -R /home/user/nas_storage
